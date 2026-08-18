@@ -3,20 +3,21 @@ A module for validating, counting, and processing genomic sequences.
 """
 
 # 1. Module-level Constants & Translation Tables
-_DNA_BASES = {"A", "C", "G", "T"} 
-_RNA_BASES = {"A", "C", "G", "U"} 
-_DNA_COMPLEMENT = str.maketrans("ACGT", "TGCA")
-_RNA_COMPLEMENT = str.maketrans("ACGU", "UGCA")
+_IUPAC_DNA_BASES = set("ACGTNRYSWKMBDHV-")
+_IUPAC_RNA_BASES = set("ACGUNRYSWKMBDHV-")
+_CANONICAL_DNA_BASES = ("A", "C", "G", "T")
+_DNA_COMPLEMENT = str.maketrans("ACGTRYSWKMBDHVN-", "TGCAYRWSMKVHDBN-")
+_RNA_COMPLEMENT = str.maketrans("ACGURYSWKMBDHVN-", "UGCAYRWSMKVHDBN-")
 
-# 2. Functions
+# 2. Validation Functions
 def validate_dna_sequence(raw_dna_sequence: str)-> str | None:
     """
-    Validate and normalise a raw DNA sequence string.
+    Validate and normalise a raw DNA sequence including IUPAC codes.
 
     Args:
         dna_sequence (str): The original, raw DNA sequence as a string.
     Returns:
-        validated_sequence (str | None): Uppercased valid sequence or None.
+        validated_sequence (str | None): Validated DNA sequence or None.
     """
 
     if not raw_dna_sequence:
@@ -27,19 +28,20 @@ def validate_dna_sequence(raw_dna_sequence: str)-> str | None:
 
     validated_sequence = raw_dna_sequence.strip().upper()
 
-    if not set(validated_sequence).issubset(_DNA_BASES):
+    if not set(validated_sequence).issubset(_IUPAC_DNA_BASES):
         return None
+
     return validated_sequence
 
 
 def validate_rna_sequence(raw_rna_sequence: str)-> str | None:
     """
-    Validate and normalise a raw RNA sequence string.
+    Validate and normalise a raw RNA sequence including IUPAC codes.
 
     Args:
         rna_sequence (str): The original, raw RNA sequence as a string.
     Returns:
-        validated_sequence (str | None): Uppercased valid sequence or None.
+        validated_sequence (str | None): Validated RNA sequence or None.
     """
 
     if not raw_rna_sequence:
@@ -50,22 +52,28 @@ def validate_rna_sequence(raw_rna_sequence: str)-> str | None:
 
     validated_sequence = raw_rna_sequence.strip().upper()
 
-    if not set(validated_sequence).issubset(_RNA_BASES):
+    if not set(validated_sequence).issubset(_IUPAC_RNA_BASES):
         return None
+
     return validated_sequence
 
 
+# 3. Other Functions
 def count_bases(valid_dna_sequence: str)-> dict[str, int]:
     """
-    Count the bases of a pre-validated DNA sequence.
+    Count canonical and IUPAC bases of a pre-validated DNA sequence.
 
     Args:
         dna_sequence (str): Pre-validated, normalised DNA sequence.
     Returns:
-        nucleotide_count (dict[str, int]): All single base counts.
+        counts (dict[str, int]): All single base counts.
     """
 
-    return {base: valid_dna_sequence.count(base) for base in _DNA_BASES}
+    counts = {base: valid_dna_sequence.count(base) for base in _CANONICAL_DNA_BASES}
+    canonical_total = sum(counts.values())
+    counts["Other"] = len(valid_dna_sequence) - canonical_total
+
+    return counts
 
 
 def transcribe_dna(valid_dna_sequence: str)-> str:
@@ -83,7 +91,7 @@ def transcribe_dna(valid_dna_sequence: str)-> str:
 
 def reverse_complement_dna(valid_dna_sequence: str)-> str:
     """
-    Complement and reverse a pre-validated DNA sequence.
+    Complement and reverse a pre-validated DNA sequence including IUPAC.
     
     Args:
         valid_dna_sequence(str): Pre-validated, normalised DNA sequence.
@@ -96,7 +104,7 @@ def reverse_complement_dna(valid_dna_sequence: str)-> str:
 
 def reverse_complement_rna(valid_rna_sequence: str)-> str:
     """
-    Complement and reverse a pre-validated RNA sequence.
+    Complement and reverse a pre-validated RNA sequence including IUPAC.
     
     Args:
         valid_rna_sequence(str): Pre-validated, normalised RNA sequence.
