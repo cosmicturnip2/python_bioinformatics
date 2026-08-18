@@ -1,5 +1,14 @@
-BASES = {"A", "C", "G", "T"} 
+"""
+A module for validating, counting, and processing genomic sequences.
+"""
 
+# 1. Module-level Constants & Translation Tables
+_DNA_BASES = {"A", "C", "G", "T"} 
+_RNA_BASES = {"A", "C", "G", "U"} 
+_DNA_COMPLEMENT = str.maketrans("ACGT", "TGCA")
+_RNA_COMPLEMENT = str.maketrans("ACGU", "UGCA")
+
+# 2. Functions
 def validate_dna_sequence(raw_dna_sequence: str)-> str | None:
     """
     Validate and normalise a raw DNA sequence string.
@@ -18,7 +27,30 @@ def validate_dna_sequence(raw_dna_sequence: str)-> str | None:
 
     validated_sequence = raw_dna_sequence.strip().upper()
 
-    if not set(validated_sequence).issubset(BASES):
+    if not set(validated_sequence).issubset(_DNA_BASES):
+        return None
+    return validated_sequence
+
+
+def validate_rna_sequence(raw_rna_sequence: str)-> str | None:
+    """
+    Validate and normalise a raw RNA sequence string.
+
+    Args:
+        rna_sequence (str): The original, raw RNA sequence as a string.
+    Returns:
+        validated_sequence (str | None): Uppercased valid sequence or None.
+    """
+
+    if not raw_rna_sequence:
+        return None
+
+    if not isinstance(raw_rna_sequence, str):
+        return None
+
+    validated_sequence = raw_rna_sequence.strip().upper()
+
+    if not set(validated_sequence).issubset(_RNA_BASES):
         return None
     return validated_sequence
 
@@ -28,9 +60,49 @@ def count_bases(valid_dna_sequence: str)-> dict[str, int]:
     Count the bases of a pre-validated DNA sequence.
 
     Args:
-        dna_sequence (str): The input DNA sequence as a string.
+        dna_sequence (str): Pre-validated, normalised DNA sequence.
     Returns:
         nucleotide_count (dict[str, int]): All single base counts.
     """
 
-    return {base: valid_dna_sequence.count(base) for base in BASES}
+    return {base: valid_dna_sequence.count(base) for base in _DNA_BASES}
+
+
+def transcribe_dna(valid_dna_sequence: str)-> str:
+    """
+    Transcribe a pre-validated DNA sequence by replacing T with U.
+
+    Args:
+        valid_dna_sequence (str): Pre-validated, normalised DNA sequence.
+    Returns:
+        str: Transcribed RNA sequence.
+    """
+
+    return valid_dna_sequence.replace("T", "U")
+
+
+def reverse_complement_dna(valid_dna_sequence: str)-> str:
+    """
+    Complement and reverse a pre-validated DNA sequence.
+    
+    Args:
+        valid_dna_sequence(str): Pre-validated, normalised DNA sequence.
+    Returns:
+        str: Reverse complemented DNA sequence.
+    """
+
+    return valid_dna_sequence.translate(_DNA_COMPLEMENT)[::-1]
+
+
+def reverse_complement_rna(valid_rna_sequence: str)-> str:
+    """
+    Complement and reverse a pre-validated RNA sequence.
+    
+    Args:
+        valid_rna_sequence(str): Pre-validated, normalised RNA sequence.
+    Returns:
+        str: Reverse complemented RNA sequence.
+    """
+
+    return valid_rna_sequence.translate(_RNA_COMPLEMENT)[::-1]
+
