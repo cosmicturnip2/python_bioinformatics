@@ -59,23 +59,6 @@ def validate_rna_sequence(raw_rna_sequence: str)-> str | None:
 
 
 # 3. Other Functions
-def count_bases(valid_dna_sequence: str)-> dict[str, int]:
-    """
-    Count canonical and IUPAC bases of a pre-validated DNA sequence.
-
-    Args:
-        dna_sequence (str): Pre-validated, normalised DNA sequence.
-    Returns:
-        counts (dict[str, int]): All single base counts.
-    """
-
-    counts = {base: valid_dna_sequence.count(base) for base in _CANONICAL_DNA_BASES}
-    canonical_total = sum(counts.values())
-    counts["Other"] = len(valid_dna_sequence) - canonical_total
-
-    return counts
-
-
 def transcribe_dna(valid_dna_sequence: str)-> str:
     """
     Transcribe a pre-validated DNA sequence by replacing T with U.
@@ -114,3 +97,36 @@ def reverse_complement_rna(valid_rna_sequence: str)-> str:
 
     return valid_rna_sequence.translate(_RNA_COMPLEMENT)[::-1]
 
+
+# 4. Count Functions
+def count_bases(valid_dna_sequence: str)-> dict[str, int]:
+    """
+    Count canonical and IUPAC bases of a pre-validated DNA sequence.
+
+    Args:
+        dna_sequence (str): Pre-validated, normalised DNA sequence.
+    Returns:
+        counts (dict[str, int]): All single base counts.
+    """
+
+    counts = {base: valid_dna_sequence.count(base) for base in _CANONICAL_DNA_BASES}
+    canonical_total = sum(counts.values())
+    counts["Other"] = len(valid_dna_sequence) - canonical_total
+
+    return counts
+
+
+def calculate_gc_content(valid_dna_sequence: str) -> float:
+    """
+    Calculate the GC ratio of a pre-validated DNA sequence.
+
+    Args:
+        valid_dna_sequence(str): Pre-validated, normalised DNA sequence.
+    Returns:
+        float: GC ratio between 0.0 and 1.0.
+    """
+
+    if not valid_dna_sequence:
+        return 0.0
+
+    return (valid_dna_sequence.count("G") + valid_dna_sequence.count("C")) / len(valid_dna_sequence)
